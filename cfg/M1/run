@@ -1,0 +1,32 @@
+#!/bin/bash
+
+set -e
+
+# alias tpaexec='/home/ec2-user/tpa/bin/tpaexec'
+# source ~/.virtualenvs/tpa/bin/activate
+# cp -r cfg/M1/commands .
+
+tpaexec deprovision . || true
+cp config.1.yml config.yml
+tpaexec provision . 
+tpaexec deploy .
+
+cp config.2.yml config.yml
+tpaexec provision .
+tpaexec upgrade-postgres . -e update_hosts=charlie,bravo,alpha
+tpaexec deploy .
+tpaexec cmd . alpha,bravo,charlie -b --become-user postgres -a 'psql -p 5432 postgres -c "SELECT current_setting($$server_version$$) AS server_version;"'
+tpaexec cmd . alpha,bravo,charlie -b --become-user postgres -a '/usr/pgsql-15/bin/repmgr cluster show -f /etc/repmgr/15/repmgr.conf'
+
+cp config.3.yml config.yml
+tpaexec provision . && tpaexec deploy .
+tpaexec cmd . alpha,bravo,charlie -b --become-user postgres -a 'psql -p 5432 postgres -c "SELECT current_setting($$server_version$$) AS server_version;"'
+tpaexec cmd . alpha,bravo,charlie -b --become-user postgres -a '/usr/pgsql-15/bin/repmgr cluster show -f /etc/repmgr/15/repmgr.conf'
+
+### optionally uncomment the following lines to clean up the old cluster and binaries
+# tpaexec cmd . oltp01,orr01,oltp02,orr02,wit -a 'rm -rf /data01/pg13'
+# tpaexec cmd . oltp01,orr01,oltp02,orr02,wit -a 'yum remove -y postgresql13-server*'
+
+# tpaexec deprovision .
+# rm config.yml
+

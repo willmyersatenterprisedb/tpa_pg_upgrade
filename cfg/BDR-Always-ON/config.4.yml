@@ -1,0 +1,116 @@
+---
+architecture: BDR-Always-ON
+cluster_name: upgrade-postgres
+cluster_tags: {}
+
+cluster_vars:
+  postgres_data_dir: /data01/epas13
+  bdr_database: bdrdb
+  bdr_node_group: bdrgroup
+  bdr_version: '4'
+  enable_pg_backup_api: true
+  failover_manager: harp
+  harp_consensus_protocol: etcd
+  postgres_coredump_filter: '0xff'
+  postgres_version: '13'
+  postgresql_flavour: epas
+  preferred_python_version: python3
+  tpa_2q_repositories:
+  - products/bdr4/release
+  - products/harp/release
+  use_volatile_subscriptions: true
+  barman_backup_redundancy: 1
+
+locations:
+- Name: dc1
+- Name: dc2
+- Name: dc3
+
+instance_defaults:
+  image: tpa/redhat:8
+  platform: docker
+  vars:
+    ansible_user: root
+
+instances:
+- Name: oltp01
+  backup: bar01
+  location: dc1
+  node: 1
+  role:
+  - bdr
+  - etcd
+  vars:
+    postgres_version: 14
+    postgres_data_dir: /data01/epas14
+
+- Name: oltp02
+  location: dc1
+  node: 2
+  role:
+  - bdr
+  - etcd
+  vars:
+    postgres_version: 14
+    postgres_data_dir: /data01/epas14
+
+- Name: orr01
+  backup: bar01
+  location: dc2
+  node: 3
+  role:
+  - bdr
+  - etcd
+  vars:
+    postgres_version: 14
+    postgres_data_dir: /data01/epas14
+
+- Name: orr02
+  location: dc2
+  node: 4
+  role:
+  - bdr
+  - etcd
+  vars:
+    postgres_version: 14
+    postgres_data_dir: /data01/epas14
+
+- Name: wit
+  location: dc3
+  node: 5
+  role:
+  - bdr
+  - witness
+
+- Name: bar01
+  location: dc1
+  node: 6
+  role:
+  - barman
+
+- Name: harpoltp01
+  location: dc1
+  node: 7
+  role:
+  - harp-proxy
+  - etcd
+
+- Name: harpoltp02
+  location: dc1
+  node: 8
+  role:
+  - harp-proxy
+
+- Name: harporr01
+  location: dc2
+  node: 9
+  role:
+  - harp-proxy
+  - etcd
+
+- Name: harporr02
+  location: dc2
+  node: 10
+  role:
+  - harp-proxy
+

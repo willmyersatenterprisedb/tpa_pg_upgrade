@@ -1,0 +1,52 @@
+---
+architecture: M1
+cluster_name: m1
+cluster_tags: {}
+
+cluster_vars:
+  enable_pg_backup_api: false
+  failover_manager: repmgr
+  postgres_flavour: postgresql
+  postgres_version: '14'
+  preferred_python_version: python3
+  use_volatile_subscriptions: true
+  postgres_data_dir: /data01/pg14
+
+locations:
+- Name: main
+- Name: dr
+
+instance_defaults:
+  image: tpa/redhat:8
+  platform: docker
+  vars:
+    ansible_user: root
+    postgres_version: '15'
+    postgres_data_dir: /data01/pg15
+
+instances:
+- Name: alpha
+  backup: bar
+  location: main
+  node: 1
+  role:
+  - primary
+- Name: bravo
+  location: main
+  node: 2
+  role:
+  - replica
+  upstream: alpha
+- Name: bar
+  location: main
+  node: 3
+  role:
+  - barman
+  - log-server
+  - monitoring-server
+- Name: charlie
+  location: dr
+  node: 4
+  role:
+  - replica
+  upstream: bravo

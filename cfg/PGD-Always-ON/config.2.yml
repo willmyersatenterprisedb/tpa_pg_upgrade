@@ -1,0 +1,164 @@
+---
+architecture: PGD-Always-ON
+cluster_name: upgrade-postgres
+cluster_tags: {}
+
+cluster_vars:
+  postgres_data_dir: /data01/epas13
+  barman_backup_redundancy: 1
+  apt_repository_list: []
+  bdr_database: bdrdb
+  bdr_node_group: bdrgroup
+  bdr_node_groups:
+  - name: bdrgroup
+  - name: dc1_subgroup
+    options:
+      enable_proxy_routing: true
+      enable_raft: true
+      location: dc1
+    parent_group_name: bdrgroup
+  - name: dc2_subgroup
+    options:
+      enable_proxy_routing: true
+      enable_raft: true
+      location: dc2
+    parent_group_name: bdrgroup
+  - name: dc3_subgroup
+    options:
+      enable_proxy_routing: false
+      enable_raft: false
+      location: dc3
+    parent_group_name: bdrgroup
+  bdr_version: '5'
+  default_pgd_proxy_options:
+    listen_port: 6432
+  edb_repositories:
+  - enterprise
+  - postgres_distributed
+  enable_pg_backup_api: true
+  failover_manager: pgd
+  postgres_coredump_filter: '0xff'
+  postgres_version: '13'
+  postgresql_flavour: epas
+  preferred_python_version: python3
+  use_volatile_subscriptions: true
+  yum_repository_list:
+  - EPEL
+
+locations:
+- Name: dc1
+- Name: dc2
+- Name: dc3
+
+instance_defaults:
+  image: tpa/redhat:8
+  platform: docker
+  vars:
+    ansible_user: root
+
+instances:
+- Name: oltp01
+  backup: bar01
+  location: dc1
+  node: 1
+  role:
+  - bdr
+  - pem-agent
+  vars:
+    bdr_child_group: dc1_subgroup
+    bdr_node_options:
+      route_priority: 100
+
+- Name: oltp02
+  location: dc1
+  node: 2
+  role:
+  - bdr
+  - pem-agent
+  vars:
+    postgres_version: 14
+    postgres_data_dir: /data01/epas14
+    bdr_child_group: dc1_subgroup
+    bdr_node_options:
+      route_priority: 100
+
+- Name: orr01
+  backup: bar01
+  location: dc2
+  node: 3
+  role:
+  - bdr
+  - pem-agent
+  vars:
+    bdr_child_group: dc2_subgroup
+    bdr_node_options:
+      route_priority: 100
+
+- Name: orr02
+  location: dc2
+  node: 4
+  role:
+  - bdr
+  - pem-agent
+  vars:
+    postgres_version: 14
+    postgres_data_dir: /data01/epas14
+    bdr_child_group: dc2_subgroup
+    bdr_node_options:
+      route_priority: 100
+
+- Name: wit
+  location: dc3
+  node: 5
+  role:
+  - bdr
+  - witness
+  - pem-agent
+  vars:
+    bdr_child_group: dc3_subgroup
+
+- Name: bar01
+  location: dc1
+  node: 6
+  role:
+  - barman
+  - pem-agent
+
+- Name: prxoltp01
+  location: dc1
+  node: 7
+  role:
+  - pgd-proxy
+  vars:
+    bdr_child_group: dc1_subgroup
+
+- Name: prxoltp02
+  location: dc1
+  node: 8
+  role:
+  - pgd-proxy
+  vars:
+    bdr_child_group: dc1_subgroup
+
+- Name: prxorr01
+  location: dc2
+  node: 9
+  role:
+  - pgd-proxy
+  vars:
+    bdr_child_group: dc2_subgroup
+
+- Name: prxorr02
+  location: dc2
+  node: 10
+  role:
+  - pgd-proxy
+  vars:
+    bdr_child_group: dc2_subgroup
+
+- Name: pemserver
+  location: dc3
+  node: 11
+  role:
+  - pem-server
+
