@@ -1,13 +1,3 @@
----
-customer: EDB Internal
-title: PGD5 In-Place Major Postgres Upgrade
-copyright-years: 2023
-author: ['Will Myers <will.myers@enterprisedb.com>']
-date: 22 Sep 2023
-toc: True
-cluster: {'type': 'PGD', 'subtype': 'Active-Active-Active'}
----
-
 # Overview
 
 Deploy a cluster then install and upgrade the nodes in-place to the 
@@ -35,6 +25,7 @@ Note: long command lines are wrapped for readability.
     ```
     cp config.1.yml config.yml
     tpaexec provision .
+    tpaexec relink .
     tpaexec deploy .
 
     ```
@@ -46,10 +37,10 @@ Note: long command lines are wrapped for readability.
     tpaexec provision .   
     ```
 
-3.  **Upgrade the first data node**
+3.  **Upgrade the shadows**
 
     ```
-    tpaexec upgrade-postgres . -e update_hosts=oltp01
+    tpaexec upgrade . -e update_hosts=oltp02,orr02
     ```
 
 4.  **Run deploy to bring the cluster to a good working state**
@@ -65,10 +56,10 @@ Note: long command lines are wrapped for readability.
     tpaexec provision .
     ```
 
-6.  **Upgrade the second data node then the logical standby**
+6.  **Upgrade the leader nodes**
 
     ```
-    tpaexec upgrade-postgres . -e update_hosts=oltp02,orr02
+    tpaexec upgrade . -e update_hosts=oltp01,orr01
     ```
 
 7.  **Run deploy to bring the cluster to a good working state**
@@ -84,10 +75,10 @@ Note: long command lines are wrapped for readability.
     tpaexec provision .
     ```
 
-9.  **Upgrade the third data node**
+9.  **Upgrade the witness**
 
     ```
-    tpaexec upgrade-postgres . -e update_hosts=orr01
+    tpaexec upgrade . -e update_hosts=wit
     ```
 
 10.  **Run deploy to bring the cluster to a good working state**
@@ -96,26 +87,7 @@ Note: long command lines are wrapped for readability.
     tpaexec deploy .
     ```
 
-11.  **Provision updated instance variables for nodes ready for upgrade**
-
-    ```
-    cp config.5.yml config.yml
-    tpaexec provision . 
-    ```
-
-12.  **Upgrade the witness node**
-
-    ```
-    tpaexec upgrade-postgres . -e update_hosts=wit
-    ```
-
-13.  **Run deploy to bring the cluster to a good working state**
-
-    ```
-    tpaexec deploy .
-    ```
-
-14.  **Verify cluster state and Postgres version**
+11.  **Verify cluster state and Postgres version**
 
     ```
     tpaexec cmd . oltp01,orr01,oltp02,orr02,wit  -b --become-user enterprisedb -a \
