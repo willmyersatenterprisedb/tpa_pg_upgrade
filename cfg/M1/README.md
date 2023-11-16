@@ -1,3 +1,13 @@
+---
+customer: EDB Internal
+title: M1 In-Place Major Postgres Upgrade
+copyright-years: 2023
+author: ['Will Myers <will.myers@enterprisedb.com>']
+date: 22 Sep 2023
+toc: True
+cluster: {'type': 'M1', 'subtype': 'Active-Passive-Passive'}
+---
+
 # Overview
 
 Deploy a cluster then install and upgrade the nodes in-place to the 
@@ -45,7 +55,7 @@ Note: long command lines are wrapped for readability.
 3.  **Upgrade replicas then primary to new major version of Postgres**
 
     ```
-    tpaexec upgrade . -e update_hosts=charlie,bravo,alpha
+    tpaexec upgrade-postgres . -e update_hosts=charlie,bravo,alpha
     ```
 
 4.  **Run deploy to bring the cluster to a good working state**

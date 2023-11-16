@@ -19,9 +19,8 @@ The strategy is to :
 for those nodes slated for the major upgrade. For a BDR cluster, we can
 simply set the `postgres_version` and `postgres_data_dir` variables in
 the intermediary configuration files (see config.2.yml for an example).
-2) Upgrade the shadows first, then upgrade the leader before finally upgrading
-the witness. Run deploy between each set of upgrades to bring the upgraded nodes
-properly back online with the cluster.
+2) Upgrade the witness then shadows, then leader nodes. Run deploy between each
+set of upgrades to bring the upgraded nodes properly back online with the cluster.
 3) Run checks on the cluster and Postgres version.
 
 Note:
@@ -35,6 +34,7 @@ Note: long command lines are wrapped for readability.
     ```
     cp config.1.yml config.yml
     tpaexec provision .
+    tpaexec relink .
     tpaexec deploy .
     ```
 
@@ -45,10 +45,10 @@ Note: long command lines are wrapped for readability.
     tpaexec provision .   
     ```
 
-3.  **Upgrade the first data node**
+3.  **Upgrade the witness and shadow nodes**
 
     ```
-    tpaexec upgrade-postgres . -e update_hosts=oltp01
+    tpaexec upgrade-postgres . -e update_hosts=wit,orr02,oltp02
     ```
 
 4.  **Run deploy to bring the cluster to a good working state**
@@ -64,10 +64,10 @@ Note: long command lines are wrapped for readability.
     tpaexec provision .
     ```
 
-6.  **Upgrade the second data node then the logical standby**
+6.  **Upgrade the leader nodes**
 
     ```
-    tpaexec upgrade-postgres . -e update_hosts=oltp02,orr02
+    tpaexec upgrade-postgres . -e update_hosts=orr01,oltp01
     ```
 
 7.  **Run deploy to bring the cluster to a good working state**
@@ -76,46 +76,7 @@ Note: long command lines are wrapped for readability.
     tpaexec deploy .
     ```
 
-8.  **Provision updated instance variables for nodes ready for upgrade**
-
-    ```
-    cp config.4.yml config.yml
-    tpaexec provision .
-    ```
-
-
-9.  **Upgrade the third data node**
-
-    ```
-    tpaexec upgrade-postgres . -e update_hosts=orr01
-    ```
-
-10.  **Run deploy to bring the cluster to a good working state**
-
-    ```
-    tpaexec deploy .
-    ```
-
-11.  **Provision updated instance variables for nodes ready for upgrade**
-
-    ```
-    cp config.5.yml config.yml
-    tpaexec provision . 
-    ```
-
-12.  **Upgrade the witness node**
-
-    ```
-    tpaexec upgrade-postgres . -e update_hosts=wit
-    ```
-
-13.  **Run deploy to bring the cluster to a good working state**
-
-    ```
-    tpaexec deploy .
-    ```
-
-14.  **Verify cluster state and Postgres version**
+8.  **Verify cluster state and Postgres version**
 
     ```
     tpaexec cmd . oltp01,orr01,oltp02,orr02,wit  -b --become-user enterprisedb -a \

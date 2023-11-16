@@ -4,7 +4,7 @@ cluster_name: upgrade-postgres
 cluster_tags: {}
 
 cluster_vars:
-  postgres_data_dir: /data01/epas13
+  postgres_data_dir: /data01/epas14
   bdr_database: bdrdb
   bdr_node_group: bdrgroup
   bdr_version: '4'
@@ -12,7 +12,7 @@ cluster_vars:
   failover_manager: harp
   harp_consensus_protocol: etcd
   postgres_coredump_filter: '0xff'
-  postgres_version: '13'
+  postgres_version: '14'
   postgresql_flavour: epas
   preferred_python_version: python3
   tpa_2q_repositories:
@@ -40,9 +40,6 @@ instances:
   role:
   - bdr
   - etcd
-  vars:
-    postgres_version: 14
-    postgres_data_dir: /data01/epas14
 
 - Name: oltp02
   location: dc1
@@ -50,9 +47,6 @@ instances:
   role:
   - bdr
   - etcd
-  vars:
-    postgres_version: 14
-    postgres_data_dir: /data01/epas14
 
 - Name: orr01
   backup: bar01
@@ -68,9 +62,6 @@ instances:
   role:
   - bdr
   - etcd
-  vars:
-    postgres_version: 14
-    postgres_data_dir: /data01/epas14
 
 - Name: wit
   location: dc3

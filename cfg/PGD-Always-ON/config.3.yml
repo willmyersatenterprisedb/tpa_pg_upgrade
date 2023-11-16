@@ -4,7 +4,7 @@ cluster_name: upgrade-postgres
 cluster_tags: {}
 
 cluster_vars:
-  postgres_data_dir: /data01/epas13
+  postgres_data_dir: /data01/epas14
   barman_backup_redundancy: 1
   apt_repository_list: []
   bdr_database: bdrdb
@@ -38,7 +38,7 @@ cluster_vars:
   enable_pg_backup_api: true
   failover_manager: pgd
   postgres_coredump_filter: '0xff'
-  postgres_version: '13'
+  postgres_version: '14'
   postgresql_flavour: epas
   preferred_python_version: python3
   use_volatile_subscriptions: true
@@ -65,8 +65,6 @@ instances:
   - bdr
   - pem-agent
   vars:
-    postgres_version: 14
-    postgres_data_dir: /data01/epas14
     bdr_child_group: dc1_subgroup
     bdr_node_options:
       route_priority: 100
@@ -78,8 +76,6 @@ instances:
   - bdr
   - pem-agent
   vars:
-    postgres_version: 14
-    postgres_data_dir: /data01/epas14
     bdr_child_group: dc1_subgroup
     bdr_node_options:
       route_priority: 100
@@ -92,8 +88,6 @@ instances:
   - bdr
   - pem-agent
   vars:
-    postgres_version: 14
-    postgres_data_dir: /data01/epas14
     bdr_child_group: dc2_subgroup
     bdr_node_options:
       route_priority: 100
@@ -105,8 +99,6 @@ instances:
   - bdr
   - pem-agent
   vars:
-    postgres_version: 14
-    postgres_data_dir: /data01/epas14
     bdr_child_group: dc2_subgroup
     bdr_node_options:
       route_priority: 100

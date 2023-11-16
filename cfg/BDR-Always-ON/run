@@ -8,25 +8,19 @@ set -e
 
 tpaexec deprovision . || true
 cp config.1.yml config.yml
-tpaexec provision .
-tpaexec relink . 
+tpaexec provision . 
+tpaexec relink .
 tpaexec deploy .
 
 cp config.2.yml config.yml
 tpaexec provision .
-tpaexec upgrade . -e update_hosts=oltp01
+tpaexec upgrade-postgres . -e update_hosts=wit,orr02,oltp02
 tpaexec deploy .
 tpaexec cmd . oltp01,orr01,oltp02,orr02,wit  -b --become-user enterprisedb -a 'psql -p 5444 bdrdb -c "SELECT current_setting($$server_version$$) AS server_version;"'
 
 cp config.3.yml config.yml
 tpaexec provision .
-tpaexec upgrade . -e update_hosts=oltp02,orr02
-tpaexec deploy .
-tpaexec cmd . oltp01,orr01,oltp02,orr02,wit  -b --become-user enterprisedb -a 'psql -p 5444 bdrdb -c "SELECT current_setting($$server_version$$) AS server_version;"'
-
-cp config.4.yml config.yml
-tpaexec provision . 
-tpaexec upgrade . -e update_hosts=orr01
+tpaexec upgrade-postgres . -e update_hosts=orr01,oltp01
 tpaexec deploy .
 tpaexec cmd . oltp01,orr01,oltp02,orr02,wit  -b --become-user enterprisedb -a 'psql -p 5444 bdrdb -c "SELECT current_setting($$server_version$$) AS server_version;"'
 
